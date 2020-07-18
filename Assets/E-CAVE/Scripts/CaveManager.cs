@@ -5,57 +5,26 @@ using System;
 using Kinect = Windows.Kinect;
 
 
-public class POV : IComparable<POV>
-{
-    public GameObject screen, camera;
-
-    public POV(GameObject newScreen, GameObject newCamera)
-    {
-        screen = newScreen;
-        camera = newCamera;
-    }
-
-    //This method is required by the IComparable
-    //interface. 
-    public int CompareTo(POV other)
-    {
-        if (other == null)
-        {
-            return 1;
-        }
-
-        //Return the difference in power.
-        return power - other.power;
-    }
-}
-
 public class CaveManager : MonoBehaviour
 {
-    public GameObject cameraPrefab, screenContainer;
+    public Transform screenContainer;
     private Transform head, bodyView;
-    private List<GameObject> screens = new List<GameObject>();
-    private List<GameObject> cameras =
+    private List<CaveScreen> screens = new List<CaveScreen>();
 
+    public float scale = 1;
 
-
-    private void Awake()
+    private void Start()
     {
-        foreach (Transform screen in screenContainer.transform)
+        var screenCount = 0;
+        foreach (Transform screen in screenContainer)
         {
-            screens.Add(screen.gameObject);
-
+            screenCount++;
+            screens.Add(new CaveScreen(screen, screenCount));
         }
 
 
-        cam = Instantiate(cameraPrefab, this.transform).GetComponent<Camera>();
-        cam.GetComponent<ProjMatrix>().projectionScreen = screen.gameObject;
-        cam.transform.parent = this.transform;
-        cam.cullingMask = ~(1 << 9);
-        cam.aspect = screenResolution.x / screenResolution.y;
-
         bodyView = this.transform.Find("BodyView");
-
-
+        bodyView.GetComponent<BodySourceView>().scaleMult = scale;
     }
 
     private void Update()
@@ -82,18 +51,10 @@ public class CaveManager : MonoBehaviour
 
     private void UpdateCamera()
     {
-        //UpdateCameraFOV();
-        UpdateCameraPosition();
-        UpdateCameraRotation();
-    }
-
-    private void UpdateCameraPosition()
-    {
-        cam.transform.position = head.transform.position;
-    }
-
-    private void UpdateCameraRotation()
-    {
-        cam.transform.LookAt(screen, Vector3.up);
+        foreach(var screen in screens)
+        {
+            screen.camera.transform.position = this.transform.position + head.transform.position;
+            screen.camera.transform.LookAt(screen.quad.transform.position, Vector3.up);
+        }
     }
 }
