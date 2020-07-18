@@ -8,6 +8,7 @@ public class BodySourceView : MonoBehaviour
     public Material BoneMaterial;
     public GameObject BodySourceManager;
     public bool mirror;
+    public float scaleMult;
 
     private Dictionary<ulong, GameObject> _Bodies = new Dictionary<ulong, GameObject>();
     private BodySourceManager _BodyManager;
@@ -123,7 +124,7 @@ public class BodySourceView : MonoBehaviour
             lr.material = BoneMaterial;
             lr.SetWidth(0.05f, 0.05f);
 
-            jointObj.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+            jointObj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
             jointObj.name = jt.ToString();
             jointObj.transform.parent = body.transform;
         }
@@ -145,17 +146,17 @@ public class BodySourceView : MonoBehaviour
 
             Transform jointObj = bodyObject.transform.Find(jt.ToString());
             var mirrorMult = mirror ? 1 : -1;
-            jointObj.localPosition = new Vector3(GetVector3FromJoint(sourceJoint).x * mirrorMult,
-                                                 GetVector3FromJoint(sourceJoint).y,
-                                                 GetVector3FromJoint(sourceJoint).z);
+            jointObj.localPosition = new Vector3(GetVector3FromJoint(sourceJoint).x * scaleMult * mirrorMult,
+                                                 GetVector3FromJoint(sourceJoint).y * scaleMult,
+                                                 GetVector3FromJoint(sourceJoint).z * scaleMult);
 
             LineRenderer lr = jointObj.GetComponent<LineRenderer>();
             if (targetJoint.HasValue)
             {
                 lr.SetPosition(0, jointObj.localPosition);
-                var tarPos = new Vector3(GetVector3FromJoint(targetJoint.Value).x * mirrorMult,
-                                         GetVector3FromJoint(targetJoint.Value).y,
-                                         GetVector3FromJoint(targetJoint.Value).z);
+                var tarPos = new Vector3(GetVector3FromJoint(targetJoint.Value).x * scaleMult * mirrorMult,
+                                         GetVector3FromJoint(targetJoint.Value).y * scaleMult,
+                                         GetVector3FromJoint(targetJoint.Value).z * scaleMult);
                 lr.SetPosition(1, tarPos);
                 lr.SetColors(GetColorForState(sourceJoint.TrackingState), GetColorForState(targetJoint.Value.TrackingState));
             }
@@ -183,6 +184,6 @@ public class BodySourceView : MonoBehaviour
 
     private static Vector3 GetVector3FromJoint(Kinect.Joint joint)
     {
-        return new Vector3(joint.Position.X * 10, joint.Position.Y * 10, joint.Position.Z * 10);
+        return new Vector3(joint.Position.X, joint.Position.Y, joint.Position.Z);
     }
 }
