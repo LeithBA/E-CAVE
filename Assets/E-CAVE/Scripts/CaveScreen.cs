@@ -23,6 +23,7 @@ public class CaveScreen
         camera.transform.localScale = Vector3.one;
 
         var cam = camera.AddComponent<Camera>();
+        cam.targetDisplay = ID - 1;
         cam.cullingMask = ~(1 << 9);
         cam.aspect = parent.localScale.x / parent.localScale.y;
         
